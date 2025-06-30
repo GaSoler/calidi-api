@@ -1,0 +1,15 @@
+services:
+  postgres:
+    image: postgres:latest
+    ports:
+      - '5432:5432'
+    environment:
+      - POSTGRES_USER=gama
+      - POSTGRES_PASSWORD=gama
+      - POSTGRES_DB=calidi
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+
+volumes:
+  pg_data:
+    driver: local
