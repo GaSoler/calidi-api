@@ -7,43 +7,34 @@ export async function refreshToken(
 ) {
 	await request.jwtVerify({ onlyCookie: true });
 
-	const currentRefresh = request.cookies.refreshToken as string;
+	const { roles } = request.user;
 
-	if (revokedTokens.has(currentRefresh)) {
-		return reply.status(401).send({ message: "Refresh token revogado" });
-	}
-
-	const { sub: userId, roles } = request.user;
-
-	const newAccessToken = await reply.jwtSign(
+	const token = await reply.jwtSign(
 		{ roles },
 		{
-			sign: { sub: userId },
+			sign: {
+				sub: request.user.sub,
+			},
 		},
 	);
 
-	const newRefreshToken = await reply.jwtSign(
+	const refreshToken = await reply.jwtSign(
 		{ roles },
 		{
-			sign: { sub: userId, expiresIn: "7d" },
+			sign: {
+				sub: request.user.sub,
+				expiresIn: "7d",
+			},
 		},
 	);
-
-	revokedTokens.add(currentRefresh);
 
 	return reply
-		.setCookie("accessToken", newAccessToken, {
-			path: "/",
-			httpOnly: true,
-			secure: true,
-			sameSite: true,
-		})
-		.setCookie("refreshToken", newRefreshToken, {
+		.setCookie("refreshToken", refreshToken, {
 			path: "/",
 			httpOnly: true,
 			secure: true,
 			sameSite: true,
 		})
 		.status(200)
-		.send({ accessToken: newAccessToken });
+		.send({ token });
 }

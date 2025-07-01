@@ -9,10 +9,8 @@ import { userRoutes } from "./http/controllers/user/routes";
 
 export const app = fastify();
 
-// Para lidar com cookies
 app.register(fastifyCookie);
 
-// Plugin JWT: define o accessToken via cookie "accessToken" (1h)
 app.register(fastifyJwt, {
 	secret: env.JWT_SECRET,
 	cookie: {
@@ -24,14 +22,11 @@ app.register(fastifyJwt, {
 	},
 });
 
-// Rate-limit
 app.register(fastifyRateLimit);
 
-// Registrar rotas
 app.register(authRoutes, { prefix: "/auth" });
 app.register(userRoutes, { prefix: "/user" });
 
-// Tratador de erros: preserva statusCode de rate-limit e JWT
 app.setErrorHandler((error, _, reply) => {
 	if ((error as any).statusCode) {
 		return reply.status((error as any).statusCode).send(error);

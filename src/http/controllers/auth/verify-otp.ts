@@ -19,7 +19,7 @@ export async function verifyOtp(request: FastifyRequest, reply: FastifyReply) {
 			phone,
 		});
 
-		const accessToken = await reply.jwtSign(
+		const token = await reply.jwtSign(
 			{
 				roles: user.roles,
 			},
@@ -43,12 +43,6 @@ export async function verifyOtp(request: FastifyRequest, reply: FastifyReply) {
 		);
 
 		return reply
-			.setCookie("accessToken", accessToken, {
-				path: "/",
-				secure: true,
-				sameSite: true,
-				httpOnly: true,
-			})
 			.setCookie("refreshToken", refreshToken, {
 				path: "/",
 				secure: true,
@@ -57,15 +51,7 @@ export async function verifyOtp(request: FastifyRequest, reply: FastifyReply) {
 			})
 			.status(200)
 			.send({
-				accessToken,
-				user: {
-					name: user.name,
-					phone: user.phone,
-					email: user.email,
-					roles: user.roles.map((role) => ({
-						name: role.name,
-					})),
-				},
+				token,
 			});
 	} catch (err) {
 		if (err instanceof InvalidOtpError) {
