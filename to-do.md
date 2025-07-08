@@ -1,68 +1,77 @@
-1. Autenticação (Login e Registro)
+# App
 
-Base: /auth
-POST /auth/register → Registrar um novo usuário (cliente) -> ok
-POST /auth/send-otp → Envia código OTP para Whatsapp -> ok
-POST /auth/verify-otp → Verifica código OTP que usuário digitou, estando ok lança token JWT e refreshToken como cookie -> ok
-POST /auth/logout → Encerrar a sessão do usuário -> ok
-POST /auth/refresh → Renovar token JWT -> ok
+Schedule appointment barber app
 
-2. Usuários
+## Padrão de Resposta REST
 
-Base: /users
-GET /users → Listar todos os usuários (somente admin)
-GET /users/me → Buscar detalhes do usuário logado
-PUT /users/me → Atualizar perfil do usuário logado
-PUT /users/{id} → Atualizar perfil de um usuário
-DELETE /users/{id} → Deletar conta de um usuário
+### Sucesso (2xx)
+```json
+{
+  "data": {
+    "user": {
+      "id": 123,
+      "name": "Teste"
+    }
+  }
+  "error": null
+}
+```
 
-3. Barbeiros
+### Erro (4xx, 5xx)
+```json
+{
+  "data": null
+  "error": {
+    "message": "Service not found",
+    "code": "SERVICE_NOT_FOUND",
+    "status": 404,
+    "details": null  
+  }
+}
+```
 
-Base: /barbers
-GET /barbers → Listar todos os barbeiros
-GET /barbers/{id} → Ver perfil de um barbeiro
-PUT /barbers/{id} → Atualizar informações do barbeiro
-GET /barbers/{id}/appointments → Listar agendamentos de um barbeiro
+## Endpoints Necessários
 
-4. Serviços
+## 🔐 Autenticação
+**Base:** `/auth`
 
-Base: /services
-GET /services → Listar todos os serviços disponíveis -> ok
-GET /services/{id} → Buscar detalhes de um serviço -> ok
-POST /services → Criar um novo serviço (somente admin) -> ok
-PUT /services/{id} → Atualizar informações do serviço (somente admin) -> ok
-DELETE /services/{id} → Excluir um serviço (somente admin)
+- [ ] `POST /auth/register` – Registrar um novo usuário (cliente)
+- [ ] `POST /auth/send-otp` – Enviar código OTP para o WhatsApp
+- [ ] `POST /auth/verify-otp` – Verificar código OTP e gerar JWT + refreshToken via cookie
+- [ ] `POST /auth/logout` – Encerrar a sessão do usuário
+- [ ] `POST /auth/refresh` – Renovar o token JWT
 
-5. Agendamentos
 
-Base: /appointments
-GET /appointments → Listar todos os agendamentos (admin)
-POST /appointments → Criar um novo agendamento
-GET /appointments/{id} → Buscar detalhes de um agendamento
-PUT /appointments/{id} → Atualizar status do agendamento (ex: confirmado, cancelado)
-DELETE /appointments/{id} → Cancelar um agendamento
+## RFs (Requisitos funcionais)
 
-6. Disponibilidade de Barbeiros
+- [x] Deve ser possível se cadastrar;
 
-Base: /availability
-GET /availability/{barber_id} → Listar horários disponíveis de um barbeiro
-POST /availability/{barber_id} → Definir horários disponíveis (somente barbeiro/admin)
-DELETE /availability/{barber_id}/{slot_id} → Remover um horário disponível
+## RNs (Regras de negócio)
 
-7. Dashboard (Admin e Barbeiro)
+- [x] O usuário não deve poder se cadastrar com um e-mail duplicado;
 
-Base: /dashboard
-GET /dashboard/admin → Resumo geral de agendamentos e faturamento (somente admin)
-GET /dashboard/barber/{id} → Resumo de agendamentos do barbeiro
+## RNFs (Requisitos não-funcionais)
 
-8. Perfil do Usuário
+- [x] A senha do usuário precisa estar criptografada;
 
-Base: /profile
-GET /profile → Buscar perfil do usuário autenticado
-PUT /profile → Atualizar perfil do usuário autenticado
 
-9. Configurações do Sistema (Admin)
 
-Base: /settings
-GET /settings → Buscar configurações gerais
-PUT /settings → Atualizar configurações gerais (somente admin)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
