@@ -18,6 +18,11 @@ model User {
   roles UserRole[]
   otps  OTP[]
 
+  customerAppointments Appointment[] @relation("Customer")
+  barberAppointments   Appointment[] @relation("Barber")
+
+  barberAvailability BarberAvailability[]
+
   @@map("users")
 }
 
@@ -50,4 +55,71 @@ model OTP {
   createdAt DateTime @default(now())
 
   @@map("otps")
+}
+
+model Service {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  duration  Int
+  price     Float
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+
+  appointments Appointment[]
+
+  @@map("services")
+}
+
+enum Weekday {
+  SUNDAY
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+}
+
+model BarberAvailability {
+  id        String  @id @default(uuid())
+  barberId  String  @map("barber_id")
+  barber    User    @relation(fields: [barberId], references: [id])
+  weekday   Weekday
+  startTime String  @map("start_time")
+  endTime   String  @map("end_time")
+
+  @@map("barber_availabilities")
+}
+
+enum AppointmentStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  DONE
+}
+
+enum CancelReason {
+  CUSTOMER_NO_SHOW
+  BARBER_CANCELLED
+  CUSTOMER_CANCELLED
+  WEATHER_OR_EMERGENCY
+  OTHER
+}
+
+model Appointment {
+  id              String            @id @default(uuid())
+  customerId      String            @map("customer_id")
+  customer        User              @relation("Customer", fields: [customerId], references: [id])
+  barberId        String            @map("barber_id")
+  barber          User              @relation("Barber", fields: [barberId], references: [id])
+  serviceId       String            @map("service_id")
+  service         Service           @relation(fields: [serviceId], references: [id])
+  status          AppointmentStatus @map("status")
+  appointmentDate DateTime          @map("appointment_date")
+  notes           String?
+  canceledReason  CancelReason?     @map("canceled_reason")
+  createdAt       DateTime          @default(now()) @map("created_at")
+  updatedAt       DateTime          @default(now()) @map("updated_at")
+
+  @@map("appointments")
 }
