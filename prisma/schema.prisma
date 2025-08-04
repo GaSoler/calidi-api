@@ -9,26 +9,27 @@ datasource db {
 
 model User {
   id        String   @id @default(uuid())
-  name      String?
+  name      String
   phone     String   @unique
-  email     String?  @unique
+  email     String   @unique
   createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @default(now()) @map("updated_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   roles UserRole[]
-  otps  OTP[]
+  otps  Otp[]
+
+  barberAvailabilities BarberAvailability[]
 
   customerAppointments Appointment[] @relation("Customer")
   barberAppointments   Appointment[] @relation("Barber")
-
-  barberAvailability BarberAvailability[]
 
   @@map("users")
 }
 
 model Role {
-  id    String     @id @default(uuid())
-  name  String     @unique
+  id   String @id @default(uuid())
+  name String @unique
+
   users UserRole[]
 
   @@map("roles")
@@ -37,7 +38,7 @@ model Role {
 model UserRole {
   id     String @id @default(uuid())
   userId String @map("user_id")
-  user   User   @relation(fields: [userId], references: [id])
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   roleId String @map("role_id")
   role   Role   @relation(fields: [roleId], references: [id])
 
@@ -45,25 +46,27 @@ model UserRole {
   @@map("user_roles")
 }
 
-model OTP {
+model Otp {
   id        String   @id @default(uuid())
   code      String
   userId    String   @map("user_id")
-  user      User     @relation(fields: [userId], references: [id])
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   expiresAt DateTime @map("expires_at")
   used      Boolean  @default(false)
-  createdAt DateTime @default(now())
+  createdAt DateTime @default(now()) @map("created_at")
 
   @@map("otps")
 }
 
 model Service {
-  id        String   @id @default(uuid())
-  name      String   @unique
-  duration  Int
-  price     Float
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now())
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String?
+  active      Boolean  @default(true)
+  duration    Int
+  price       Float
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
 
   appointments Appointment[]
 
@@ -81,18 +84,18 @@ enum Weekday {
 }
 
 model BarberAvailability {
-  id        String  @id @default(uuid())
-  barberId  String  @map("barber_id")
-  barber    User    @relation(fields: [barberId], references: [id])
+  id        String   @id @default(uuid())
+  barberId  String   @map("barber_id")
+  barber    User     @relation(fields: [barberId], references: [id])
   weekday   Weekday
-  startTime String  @map("start_time")
-  endTime   String  @map("end_time")
+  startTime DateTime @map("start_time") @db.Time
+  endTime   DateTime @map("end_time") @db.Time
 
+  @@unique([barberId, weekday])
   @@map("barber_availabilities")
 }
 
 enum AppointmentStatus {
-  PENDING
   CONFIRMED
   CANCELLED
   DONE
@@ -114,12 +117,11 @@ model Appointment {
   barber          User              @relation("Barber", fields: [barberId], references: [id])
   serviceId       String            @map("service_id")
   service         Service           @relation(fields: [serviceId], references: [id])
-  status          AppointmentStatus @map("status")
+  status          AppointmentStatus
   appointmentDate DateTime          @map("appointment_date")
-  notes           String?
-  canceledReason  CancelReason?     @map("canceled_reason")
+  canceledReason  CancelReason?     @map("cancel_reason")
   createdAt       DateTime          @default(now()) @map("created_at")
-  updatedAt       DateTime          @default(now()) @map("updated_at")
+  updatedAt       DateTime          @updatedAt @map("updated_at")
 
   @@map("appointments")
 }

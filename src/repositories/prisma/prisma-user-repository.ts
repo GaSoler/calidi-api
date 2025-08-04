@@ -3,10 +3,59 @@ import { prisma } from "@/lib/prisma";
 import type { UserRepository, UserWithRoles } from "../user-repository";
 
 export class PrismaUserRepository implements UserRepository {
+	async findAll(): Promise<User[]> {
+		const users = await prisma.user.findMany();
+
+		return users;
+	}
+
+	async findById(id: string): Promise<User | null> {
+		const user = await prisma.user.findUnique({
+			where: {
+				id,
+			},
+		});
+
+		return user;
+	}
+
+	async findByPhone(phone: string): Promise<User | null> {
+		const user = await prisma.user.findUnique({
+			where: {
+				phone,
+			},
+		});
+
+		return user;
+	}
+
+	async findByRole(roleName: string): Promise<User[]> {
+		const users = await prisma.user.findMany({
+			where: {
+				roles: {
+					some: {
+						role: {
+							name: roleName,
+						},
+					},
+				},
+			},
+			include: {
+				roles: {
+					include: {
+						role: true,
+					},
+				},
+			},
+		});
+
+		return users;
+	}
+
 	async create(data: {
-		name?: string;
+		name: string;
 		phone: string;
-		email?: string;
+		email: string;
 		roleId: string;
 	}): Promise<User> {
 		const { name, phone, email, roleId } = data;
@@ -26,24 +75,25 @@ export class PrismaUserRepository implements UserRepository {
 		return user;
 	}
 
-	async findByPhone(phone: string): Promise<User | null> {
-		const user = await prisma.user.findUnique({
-			where: {
-				phone,
-			},
+	async update(
+		id: string,
+		data: Partial<{
+			name: string;
+			email: string;
+		}>,
+	): Promise<User> {
+		const updatedUser = await prisma.user.update({
+			where: { id },
+			data,
 		});
 
-		return user;
+		return updatedUser;
 	}
 
-	async findById(id: string): Promise<User | null> {
-		const user = await prisma.user.findUnique({
-			where: {
-				id,
-			},
+	async delete(id: string): Promise<void> {
+		await prisma.user.delete({
+			where: { id },
 		});
-
-		return user;
 	}
 
 	async findByIdWithRoles(id: string): Promise<UserWithRoles | null> {
@@ -110,18 +160,19 @@ export class PrismaUserRepository implements UserRepository {
 		};
 	}
 
-	async update(
-		id: string,
-		data: Partial<{
-			name: string;
-			email: string;
-		}>,
-	): Promise<User> {
-		const updatedUser = await prisma.user.update({
-			where: { id },
-			data,
+	async findBarbers(): Promise<User[]> {
+		const barbers = await prisma.user.findMany({
+			where: {
+				roles: {
+					some: {
+						role: {
+							name: "BARBER",
+						},
+					},
+				},
+			},
 		});
 
-		return updatedUser;
+		return barbers;
 	}
 }

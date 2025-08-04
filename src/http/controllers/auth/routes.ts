@@ -1,4 +1,5 @@
 import type { FastifyInstance } from "fastify";
+import { authOnly, publicRoute } from "@/http/helpers/route-protection";
 import { logout } from "./logout";
 import { refreshToken } from "./refresh";
 import { register } from "./register";
@@ -6,11 +7,12 @@ import { sendOtp } from "./send-otp";
 import { verifyOtp } from "./verify-otp";
 
 export async function authRoutes(app: FastifyInstance) {
-	app.post("/register", register);
+	app.post("/register", publicRoute(), register);
 
 	app.post(
 		"/send-otp",
 		{
+			...publicRoute(),
 			config: {
 				rateLimit: {
 					max: 5,
@@ -30,9 +32,9 @@ export async function authRoutes(app: FastifyInstance) {
 		sendOtp,
 	);
 
-	app.post("/verify-otp", verifyOtp);
+	app.post("/verify-otp", publicRoute(), verifyOtp);
 
-	app.patch("/refresh", refreshToken);
+	app.post("/refresh", publicRoute(), refreshToken);
 
-	app.post("/logout", logout);
+	app.post("/logout", authOnly(), logout);
 }

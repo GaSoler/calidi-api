@@ -14,16 +14,16 @@ export type UserWithRoles = {
 };
 
 export interface UserRepository {
+	findAll(): Promise<User[]>;
+	findById(id: string): Promise<User | null>;
+	findByPhone(phone: string): Promise<User | null>;
+	findByRole(roleName: string): Promise<User[]>;
 	create(data: {
-		name?: string;
+		name: string;
 		phone: string;
-		email?: string;
+		email: string;
 		roleId: string;
 	}): Promise<User>;
-	findByPhone(phone: string): Promise<User | null>;
-	findById(id: string): Promise<User | null>;
-	findByIdWithRoles(id: string): Promise<UserWithRoles | null>;
-	findByPhoneWithRoles(id: string): Promise<UserWithRoles | null>;
 	update(
 		id: string,
 		data: Partial<{
@@ -31,4 +31,10 @@ export interface UserRepository {
 			email: string;
 		}>,
 	): Promise<User>;
+	delete(id: string): Promise<void>;
+
+	findByIdWithRoles(id: string): Promise<UserWithRoles | null>;
+	findByPhoneWithRoles(id: string): Promise<UserWithRoles | null>;
+
+	findBarbers(): Promise<User[]>;
 }

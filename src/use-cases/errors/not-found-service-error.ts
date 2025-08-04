@@ -1,5 +1,7 @@
-export class NotFoundServiceError extends Error {
+import { AppError } from "./app-error";
+
+export class NotFoundServiceError extends AppError {
 	constructor() {
-		super("Não foi possível encontrar esse serviço.");
+		super("Não foi possível encontrar esse serviço.", "NOT_FOUND_SERVICE", 404);
 	}
 }

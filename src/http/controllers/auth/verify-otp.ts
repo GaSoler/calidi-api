@@ -1,7 +1,7 @@
 import type { FastifyReply, FastifyRequest } from "fastify";
 import { z } from "zod";
-import { InvalidOtpError } from "@/use-cases/errors/invalid-otp-error";
-import { makeVerifyLoginOtpUseCase } from "@/use-cases/factories/make-verify-login-otp-use-case";
+import { replySuccess } from "@/http/helpers/reply";
+import { makeVerifyOtpUseCase } from "@/use-cases/auth/factories/make-verify-otp-use-case";
 
 export async function verifyOtp(request: FastifyRequest, reply: FastifyReply) {
 	const verifyOtpBodySchema = z.object({
@@ -11,53 +11,45 @@ export async function verifyOtp(request: FastifyRequest, reply: FastifyReply) {
 
 	const { code, phone } = verifyOtpBodySchema.parse(request.body);
 
-	try {
-		const verifyLoginOtpUseCase = makeVerifyLoginOtpUseCase();
+	const verifyOtpUseCase = makeVerifyOtpUseCase();
 
-		const { user } = await verifyLoginOtpUseCase.execute({
-			code,
-			phone,
-		});
+	const { user } = await verifyOtpUseCase.execute({
+		code,
+		phone,
+	});
 
-		const token = await reply.jwtSign(
-			{
-				roles: user.roles,
+	const accessToken = await reply.jwtSign(
+		{
+			roles: user.roles,
+		},
+		{
+			sign: {
+				sub: user.id,
 			},
-			{
-				sign: {
-					sub: user.id,
-				},
-			},
-		);
+		},
+	);
 
-		const refreshToken = await reply.jwtSign(
-			{
-				role: user.roles,
+	const refreshToken = await reply.jwtSign(
+		{
+			role: user.roles,
+		},
+		{
+			sign: {
+				sub: user.id,
+				expiresIn: "7d",
 			},
-			{
-				sign: {
-					sub: user.id,
-					expiresIn: "7d",
-				},
-			},
-		);
+		},
+	);
 
-		return reply
-			.setCookie("refreshToken", refreshToken, {
-				path: "/",
-				secure: true,
-				sameSite: true,
-				httpOnly: true,
-			})
-			.status(200)
-			.send({
-				token,
-			});
-	} catch (err) {
-		if (err instanceof InvalidOtpError) {
-			return reply.status(400).send({ message: err.message });
-		}
-
-		throw err;
-	}
+	return replySuccess(
+		reply.setCookie("refreshToken", refreshToken, {
+			path: "/",
+			secure: true,
+			sameSite: true,
+			httpOnly: true,
+		}),
+		{
+			accessToken,
+		},
+	);
 }

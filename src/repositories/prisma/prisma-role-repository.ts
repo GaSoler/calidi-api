@@ -10,4 +10,18 @@ export class PrismaRoleRepository implements RoleRepository {
 
 		return role;
 	}
+
+	async findByUserId(userId: string): Promise<Role[]> {
+		const roles = await prisma.role.findMany({
+			where: {
+				users: {
+					some: {
+						userId,
+					},
+				},
+			},
+		});
+
+		return roles;
+	}
 }

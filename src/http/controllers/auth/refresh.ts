@@ -1,5 +1,5 @@
 import type { FastifyReply, FastifyRequest } from "fastify";
-import { revokedTokens } from "@/lib/auth";
+import { replySuccess } from "@/http/helpers/reply";
 
 export async function refreshToken(
 	request: FastifyRequest,
@@ -9,7 +9,7 @@ export async function refreshToken(
 
 	const { roles } = request.user;
 
-	const token = await reply.jwtSign(
+	const accessToken = await reply.jwtSign(
 		{ roles },
 		{
 			sign: {
@@ -28,13 +28,15 @@ export async function refreshToken(
 		},
 	);
 
-	return reply
-		.setCookie("refreshToken", refreshToken, {
+	return replySuccess(
+		reply.setCookie("refreshToken", refreshToken, {
 			path: "/",
 			httpOnly: true,
 			secure: true,
 			sameSite: true,
-		})
-		.status(200)
-		.send({ token });
+		}),
+		{
+			accessToken,
+		},
+	);
 }

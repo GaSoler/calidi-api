@@ -1,7 +1,7 @@
 import type { FastifyReply, FastifyRequest } from "fastify";
 import { z } from "zod";
-import { UnableToSendOtpError } from "@/use-cases/errors/unable-to-send-otp-error";
-import { makeSendLoginOtpUseCase } from "@/use-cases/factories/make-send-login-otp-use-case";
+import { replySuccess } from "@/http/helpers/reply";
+import { makeSendOtpUseCase } from "@/use-cases/auth/factories/make-send-otp-use-case";
 
 export async function sendOtp(request: FastifyRequest, reply: FastifyReply) {
 	const sendOtpBodySchema = z.object({
@@ -10,17 +10,11 @@ export async function sendOtp(request: FastifyRequest, reply: FastifyReply) {
 
 	const { phone } = sendOtpBodySchema.parse(request.body);
 
-	try {
-		const sendOtpUseCase = makeSendLoginOtpUseCase();
+	const sendOtpUseCase = makeSendOtpUseCase();
 
-		await sendOtpUseCase.execute({ phone });
+	await sendOtpUseCase.execute({ phone });
 
-		return reply.status(200).send({ message: "OTP enviado com sucesso!" });
-	} catch (err) {
-		if (err instanceof UnableToSendOtpError) {
-			return reply.status(400).send({ message: err.message });
-		}
-
-		throw err;
-	}
+	return replySuccess(reply, {
+		message: "OTP enviado com sucesso!",
+	});
 }

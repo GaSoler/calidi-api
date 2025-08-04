@@ -1,9 +1,11 @@
-import type { BarberAvailability, Weekday } from "@prisma/client";
+import type { Weekday } from "@prisma/client";
 
 export interface BarberAvailabilityRepository {
-	findAll(): Promise<BarberAvailability[]>;
-	findByWeekday(weekday: Weekday): Promise<BarberAvailability[]>;
-	findByBarberId(barberId: string): Promise<BarberAvailability[]>;
-	create(barberId: string);
-	delete();
+	findByBarberIdAndWeekday(
+		barberId: string,
+		weekday: Weekday,
+	): Promise<{
+		startTime: string;
+		endTime: string;
+	} | null>;
 }
