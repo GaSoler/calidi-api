@@ -1,14 +1,14 @@
 import type { UserRepository } from "@/repositories/user-repository";
 import type { Barber } from "@/types/barber";
 
-interface ListBarbersUseCaseResponse {
+interface ListAvailableBarbersUseCaseResponse {
 	barbers: Barber[];
 }
 
-export class ListBarbersUseCase {
+export class ListAvailableBarbersUseCase {
 	constructor(private userRepository: UserRepository) {}
 
-	async execute(): Promise<ListBarbersUseCaseResponse> {
+	async execute(): Promise<ListAvailableBarbersUseCaseResponse> {
 		const barbers = (await this.userRepository.findByRole("BARBER")).map(
 			(barber) => ({
 				id: barber.id,

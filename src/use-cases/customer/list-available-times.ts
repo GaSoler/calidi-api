@@ -1,4 +1,4 @@
-import type { Weekday } from "@prisma/client";
+import { Weekday } from "@prisma/client";
 import { addMinutes, format, isBefore, parseISO } from "date-fns";
 import type { AppointmentRepository } from "@/repositories/appointment-repository";
 import type { BarberAvailabilityRepository } from "@/repositories/barber-availability-repository";
@@ -27,7 +27,14 @@ export class ListAvailableTimesUseCase {
 		barberId,
 		date,
 	}: ListAvailableTimesUseCaseRequest): Promise<ListAvailableTimesUseCaseResponse> {
-		const weekday = date.getDay();
+		const weekday = [
+			Weekday.SUNDAY,
+			Weekday.MONDAY,
+			Weekday.WEDNESDAY,
+			Weekday.THURSDAY,
+			Weekday.FRIDAY,
+			Weekday.SATURDAY,
+		][date.getDay()];
 
 		const availability =
 			await this.barberAvailabilityRepository.findByBarberIdAndWeekday(

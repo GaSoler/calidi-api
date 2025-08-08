@@ -1,4 +1,9 @@
-import { AppointmentStatus, PrismaClient, Weekday } from "@prisma/client";
+import {
+	AppointmentStatus,
+	CancelReason,
+	PrismaClient,
+	Weekday,
+} from "@prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -6,7 +11,19 @@ function time(hour: number, minute: number = 0): Date {
 	return new Date(Date.UTC(1970, 0, 1, hour, minute));
 }
 
+function createAppointmentDateTime(
+	daysFromNow: number,
+	hour: number,
+	minute: number = 0,
+): Date {
+	const date = new Date();
+	date.setDate(date.getDate() + daysFromNow);
+	date.setHours(hour, minute, 0, 0);
+	return date;
+}
+
 async function main() {
+	// Limpeza
 	await prisma.appointment.deleteMany({});
 	await prisma.barberAvailability.deleteMany({});
 	await prisma.userRole.deleteMany({});
@@ -15,7 +32,7 @@ async function main() {
 	await prisma.user.deleteMany({});
 	await prisma.role.deleteMany({});
 
-	// Roles
+	// ========== ROLES ==========
 	const roles = ["ADMIN", "BARBER", "CUSTOMER"];
 	for (const roleName of roles) {
 		await prisma.role.upsert({
@@ -26,128 +43,172 @@ async function main() {
 	}
 	console.log("✅ Roles seeded");
 
-	// Usuários
-	const customer = await prisma.user.upsert({
-		where: { phone: "999111111" },
+	// ========== USUÁRIOS ==========
+	const customer1 = await prisma.user.upsert({
+		where: { phone: "11999111111" },
 		update: {},
 		create: {
-			name: "Cliente Teste",
-			phone: "999111111",
-			email: "cliente@example.com",
+			name: "João Silva",
+			phone: "11999111111",
+			email: "joao.silva@example.com",
 		},
 	});
-	const barber = await prisma.user.upsert({
-		where: { phone: "999222222" },
+
+	const customer2 = await prisma.user.upsert({
+		where: { phone: "11999555555" },
 		update: {},
 		create: {
-			name: "Barber Teste",
-			phone: "999222222",
-			email: "barber@example.com",
+			name: "Pedro Santos",
+			phone: "11999555555",
+			email: "pedro.santos@example.com",
 		},
 	});
+
+	const barber1 = await prisma.user.upsert({
+		where: { phone: "11999222222" },
+		update: {},
+		create: {
+			name: "Carlos Barbeiro",
+			phone: "11999222222",
+			email: "carlos.barber@example.com",
+		},
+	});
+
+	const barber2 = await prisma.user.upsert({
+		where: { phone: "11999666666" },
+		update: {},
+		create: {
+			name: "Ricardo Navalha",
+			phone: "11999666666",
+			email: "ricardo.barber@example.com",
+		},
+	});
+
 	const barberAdmin = await prisma.user.upsert({
-		where: { phone: "999333333" },
+		where: { phone: "11999333333" },
 		update: {},
 		create: {
-			name: "Barbeiro Admin",
-			phone: "999333333",
-			email: "barber-admin@example.com",
+			name: "Roberto Dono",
+			phone: "11999333333",
+			email: "roberto.admin@example.com",
 		},
 	});
+
 	const admin = await prisma.user.upsert({
-		where: { phone: "999444444" },
+		where: { phone: "11999444444" },
 		update: {},
 		create: {
-			name: "Admin Teste",
-			phone: "999444444",
-			email: "admin@example.com",
+			name: "Ana Gerente",
+			phone: "11999444444",
+			email: "ana.admin@example.com",
 		},
 	});
 
-	// Vincular roles
+	// ========== VINCULAR ROLES ==========
 	const allRoles = await prisma.role.findMany();
-
 	const roleMap = new Map(allRoles.map((r) => [r.name, r.id]));
 
 	await prisma.userRole.createMany({
 		data: [
-			{ userId: customer.id, roleId: roleMap.get("CUSTOMER")! },
-			{ userId: barber.id, roleId: roleMap.get("BARBER")! },
+			// Clientes
+			{ userId: customer1.id, roleId: roleMap.get("CUSTOMER")! },
+			{ userId: customer2.id, roleId: roleMap.get("CUSTOMER")! },
+
+			// Barbeiros
+			{ userId: barber1.id, roleId: roleMap.get("BARBER")! },
+			{ userId: barber2.id, roleId: roleMap.get("BARBER")! },
+
+			// Barbeiro Admin (ADMIN + BARBER)
 			{ userId: barberAdmin.id, roleId: roleMap.get("ADMIN")! },
 			{ userId: barberAdmin.id, roleId: roleMap.get("BARBER")! },
+
+			// Admin puro
 			{ userId: admin.id, roleId: roleMap.get("ADMIN")! },
 		],
 		skipDuplicates: true,
 	});
 	console.log("✅ Users and roles seeded");
 
-	// Serviços
+	// ========== SERVIÇOS ==========
 	const services = [
 		{
 			name: "Corte de Cabelo Masculino",
-			description: "Clássico corte de cabelo com tesoura e maquininha",
+			description: "Clássico corte de cabelo com tesoura e máquina",
 			duration: 30,
-			price: 40,
+			price: 35.0,
+			active: true,
 		},
 		{
 			name: "Barba Completa",
 			description: "Aparar, modelar e hidratar a barba com toalha quente",
-			duration: 20,
-			price: 25,
+			duration: 25,
+			price: 25.0,
+			active: true,
 		},
 		{
 			name: "Corte + Barba",
-			description: "Corte de cabelo e barba completa em uma única sessão",
-			duration: 45,
-			price: 60,
+			description: "Corte de cabelo e barba completa - combo promocional",
+			duration: 50,
+			price: 55.0, // desconto no combo
+			active: true,
 		},
 		{
-			name: "Sobrancelha na Navalha",
-			description:
-				"Design de sobrancelha feito com navalha para realce do olhar",
-			duration: 10,
-			price: 20,
+			name: "Sobrancelha",
+			description: "Design de sobrancelha feito com navalha",
+			duration: 15,
+			price: 18.0,
+			active: true,
 		},
 		{
 			name: "Corte Infantil",
-			description:
-				"Corte para crianças até 12 anos, com paciência e cuidado extra",
-			duration: 30,
-			price: 50,
+			description: "Corte para crianças até 12 anos",
+			duration: 25,
+			price: 30.0,
+			active: true,
 		},
 		{
 			name: "Hidratação Capilar",
-			description:
-				"Tratamento com produtos hidratantes para cabelos ressecados",
-			duration: 25,
-			price: 40,
+			description: "Tratamento hidratante para cabelos ressecados",
+			duration: 30,
+			price: 40.0,
+			active: true,
 		},
 		{
 			name: "Pigmentação de Barba",
-			description:
-				"Realce da barba com pigmento, cobrindo falhas e deixando uniforme",
-			duration: 35,
-			price: 60,
+			description: "Realce da barba cobrindo falhas",
+			duration: 40,
+			price: 80.0,
+			active: true,
 		},
 		{
-			name: "Corte Degradê",
-			description: "Corte com transição suave nas laterais, muito estiloso",
+			name: "Corte Social",
+			description: "Corte executivo para ocasiões formais",
 			duration: 35,
-			price: 70,
+			price: 45.0,
+			active: true,
+		},
+		{
+			name: "Relaxamento Capilar",
+			description: "Serviço descontinuado",
+			duration: 60,
+			price: 70.0,
+			active: false,
 		},
 	];
 
+	const createdServices = [];
 	for (const service of services) {
-		await prisma.service.upsert({
+		const created = await prisma.service.upsert({
 			where: { name: service.name },
 			update: {},
 			create: service,
 		});
+		createdServices.push(created);
 	}
-	console.log("✅ Services seeded");
+	console.log("✅ Services seeded (including inactive ones)");
 
-	// Disponibilidade do barbeiro
-	const weekdays = [
+	// ========== DISPONIBILIDADE DOS BARBEIROS ==========
+	const workDays = [
 		Weekday.MONDAY,
 		Weekday.TUESDAY,
 		Weekday.WEDNESDAY,
@@ -155,7 +216,8 @@ async function main() {
 		Weekday.FRIDAY,
 	];
 
-	for (const weekday of weekdays) {
+	// Barbeiro Admin - horário padrão
+	for (const weekday of workDays) {
 		await prisma.barberAvailability.upsert({
 			where: {
 				barberId_weekday: {
@@ -167,13 +229,13 @@ async function main() {
 			create: {
 				barberId: barberAdmin.id,
 				weekday,
-				startTime: time(9),
+				startTime: time(8),
 				endTime: time(18),
 			},
 		});
 	}
 
-	// Sábado com horário diferente
+	// Sábado meio período
 	await prisma.barberAvailability.upsert({
 		where: {
 			barberId_weekday: {
@@ -185,55 +247,140 @@ async function main() {
 		create: {
 			barberId: barberAdmin.id,
 			weekday: Weekday.SATURDAY,
-			startTime: time(9),
-			endTime: time(13),
+			startTime: time(8),
+			endTime: time(14),
 		},
 	});
 
-	console.log("✅ Barber availability seeded");
-
-	// Agendamentos
-	const service = await prisma.service.findFirst({
-		where: { name: "Corte de Cabelo Masculino" },
-	});
-
-	if (!service) {
-		throw new Error("Serviço não encontrado.");
+	// Barbeiro 1 - horário alternativo
+	for (const weekday of workDays) {
+		await prisma.barberAvailability.upsert({
+			where: {
+				barberId_weekday: {
+					barberId: barber1.id,
+					weekday,
+				},
+			},
+			update: {},
+			create: {
+				barberId: barber1.id,
+				weekday,
+				startTime: time(9),
+				endTime: time(17),
+			},
+		});
 	}
 
-	const today = new Date();
-	const tomorrow = new Date(today);
-	tomorrow.setDate(today.getDate() + 1);
+	// Barbeiro 2 - trabalha terça, quinta e sábado
+	const barber2Days = [Weekday.TUESDAY, Weekday.THURSDAY, Weekday.SATURDAY];
+	for (const weekday of barber2Days) {
+		const endTime = weekday === Weekday.SATURDAY ? time(16) : time(19);
 
-	const afterTomorrow = new Date(today);
-	afterTomorrow.setDate(today.getDate() + 2);
+		await prisma.barberAvailability.upsert({
+			where: {
+				barberId_weekday: {
+					barberId: barber2.id,
+					weekday,
+				},
+			},
+			update: {},
+			create: {
+				barberId: barber2.id,
+				weekday,
+				startTime: time(10),
+				endTime: endTime,
+			},
+		});
+	}
+
+	console.log(
+		"✅ Barber availability seeded (multiple barbers with different schedules)",
+	);
+
+	// ========== AGENDAMENTOS VARIADOS ==========
+	const corteService = createdServices.find(
+		(s) => s.name === "Corte de Cabelo Masculino",
+	)!;
+	const barbaService = createdServices.find(
+		(s) => s.name === "Barba Completa",
+	)!;
+	const comboService = createdServices.find((s) => s.name === "Corte + Barba")!;
 
 	await prisma.appointment.createMany({
 		data: [
+			// Agendamentos confirmados (futuros)
 			{
-				customerId: customer.id,
+				customerId: customer1.id,
 				barberId: barberAdmin.id,
-				serviceId: service.id,
+				serviceId: corteService.id,
 				status: AppointmentStatus.CONFIRMED,
-				appointmentDate: tomorrow,
+				appointmentDate: createAppointmentDateTime(1, 10, 0), // amanhã 10h
 			},
 			{
-				customerId: customer.id,
+				customerId: customer2.id,
+				barberId: barber1.id,
+				serviceId: barbaService.id,
+				status: AppointmentStatus.CONFIRMED,
+				appointmentDate: createAppointmentDateTime(1, 14, 30), // amanhã 14:30
+			},
+			{
+				customerId: customer1.id,
+				barberId: barber2.id,
+				serviceId: comboService.id,
+				status: AppointmentStatus.CONFIRMED,
+				appointmentDate: createAppointmentDateTime(3, 11, 0), // daqui 3 dias 11h
+			},
+
+			// Agendamentos finalizados (passados)
+			{
+				customerId: customer1.id,
 				barberId: barberAdmin.id,
-				serviceId: service.id,
+				serviceId: corteService.id,
 				status: AppointmentStatus.DONE,
-				appointmentDate: afterTomorrow,
+				appointmentDate: createAppointmentDateTime(-1, 15, 0), // ontem 15h
 			},
 			{
-				customerId: customer.id,
+				customerId: customer2.id,
+				barberId: barber1.id,
+				serviceId: barbaService.id,
+				status: AppointmentStatus.DONE,
+				appointmentDate: createAppointmentDateTime(-3, 9, 30), // 3 dias atrás
+			},
+
+			// Agendamentos cancelados
+			{
+				customerId: customer1.id,
 				barberId: barberAdmin.id,
-				serviceId: service.id,
+				serviceId: corteService.id,
 				status: AppointmentStatus.CANCELLED,
-				appointmentDate: afterTomorrow,
+				appointmentDate: createAppointmentDateTime(-2, 16, 0), // 2 dias atrás
+				canceledReason: CancelReason.CUSTOMER_CANCELLED,
+			},
+			{
+				customerId: customer2.id,
+				barberId: barber2.id,
+				serviceId: comboService.id,
+				status: AppointmentStatus.CANCELLED,
+				appointmentDate: createAppointmentDateTime(2, 13, 0), // daqui 2 dias
+				canceledReason: CancelReason.WEATHER_OR_EMERGENCY,
 			},
 		],
 	});
-	console.log("✅ Appointments seeded");
+	console.log("✅ Appointments seeded (multiple statuses, times, and barbers)");
+
+	// ========== RESUMO ==========
+	const totalUsers = await prisma.user.count();
+	const totalServices = await prisma.service.count();
+	const totalAppointments = await prisma.appointment.count();
+
+	console.log("\n🎯 SEED SUMMARY:");
+	console.log(`👥 Users: ${totalUsers} (2 customers, 3 barbers, 1 admin)`);
+	console.log(`💼 Services: ${totalServices} (1 inactive for testing)`);
+	console.log(
+		`📅 Appointments: ${totalAppointments} (confirmed, done, cancelled)`,
+	);
+	console.log(`⏰ Multiple barbers with different schedules`);
+	console.log(`📊 Ready for testing all scenarios!`);
 }
 
 main()

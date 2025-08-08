@@ -16,7 +16,7 @@ import { AppError } from "./use-cases/errors/app-error";
 export const app = fastify();
 
 app.register(fastifyCors, {
-	origin: ["http://localhost:5173"],
+	origin: ["*"],
 	credentials: true,
 });
 
@@ -37,7 +37,7 @@ app.register(fastifyRateLimit);
 
 app.register(authRoutes, { prefix: "/auth" });
 app.register(profileRoutes, { prefix: "/profile" });
-app.register(customerRoutes, { prefix: "/customers" });
+app.register(customerRoutes, { prefix: "/customer" });
 // app.register(serviceRoutes, { prefix: "/services" });
 // app.register(userRoutes, { prefix: "/users" });
 // app.register(barberRoutes, { prefix: "/barbers" });

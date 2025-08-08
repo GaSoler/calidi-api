@@ -1,8 +1,8 @@
-import type { OTP } from "@prisma/client";
+import type { Otp } from "@prisma/client";
 
 export interface OtpRepository {
-	create(data: { userId: string; code: string; expiresAt: Date }): Promise<OTP>;
-	findValidOtp(userId: string, code: string): Promise<OTP | null>;
+	create(data: { userId: string; code: string; expiresAt: Date }): Promise<Otp>;
+	findValidOtp(userId: string, code: string): Promise<Otp | null>;
 	markUsed(otpId: string): Promise<void>;
 	deleteExpired(): Promise<number>;
 	invalidateAllByUserId(userId: string): Promise<void>;

@@ -1,4 +1,4 @@
-import type { OTP } from "@prisma/client";
+import type { Otp } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import type { OtpRepository } from "../otp-repository";
 
@@ -7,16 +7,16 @@ export class PrismaOtpRepository implements OtpRepository {
 		userId: string;
 		code: string;
 		expiresAt: Date;
-	}): Promise<OTP> {
-		const otp = await prisma.oTP.create({
+	}): Promise<Otp> {
+		const otp = await prisma.otp.create({
 			data,
 		});
 
 		return otp;
 	}
 
-	async findValidOtp(userId: string, code: string): Promise<OTP | null> {
-		const otp = await prisma.oTP.findFirst({
+	async findValidOtp(userId: string, code: string): Promise<Otp | null> {
+		const otp = await prisma.otp.findFirst({
 			where: {
 				userId,
 				code,
@@ -29,14 +29,14 @@ export class PrismaOtpRepository implements OtpRepository {
 	}
 
 	async markUsed(otpId: string): Promise<void> {
-		await prisma.oTP.update({
+		await prisma.otp.update({
 			where: { id: otpId },
 			data: { used: true },
 		});
 	}
 
 	async deleteExpired(): Promise<number> {
-		const res = await prisma.oTP.deleteMany({
+		const res = await prisma.otp.deleteMany({
 			where: {
 				used: false,
 				expiresAt: { lt: new Date() },
@@ -47,7 +47,7 @@ export class PrismaOtpRepository implements OtpRepository {
 	}
 
 	async invalidateAllByUserId(userId: string): Promise<void> {
-		await prisma.oTP.updateMany({
+		await prisma.otp.updateMany({
 			where: {
 				userId,
 				used: false,
