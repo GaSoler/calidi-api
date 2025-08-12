@@ -1,3 +1,4 @@
+import type { Appointment } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import type { AppointmentRepository } from "../appointment-repository";
 
@@ -22,24 +23,25 @@ export class PrismaAppointmentRepository implements AppointmentRepository {
 	// 	return appointment;
 	// }
 
-	// async create(data: {
-	// 	customerId: string;
-	// 	barberId: string;
-	// 	serviceId: string;
-	// 	appointmentDate: Date;
-	// 	startsAt: string;
-	// }): Promise<Appointment> {
-	// 	const { appointmentDate, barberId, customerId, serviceId, startsAt } = data;
-	// 	const appointment = await prisma.appointment.create({
-	// 		data: {
-	// 			customerId,
-	// 			barberId,
-	// 			serviceId,
-	// 			appointmentDate,
-	// 			start,
-	// 		},
-	// 	});
-	// }
+	async create(data: {
+		customerId: string;
+		barberId: string;
+		serviceId: string;
+		appointmentDate: Date;
+	}): Promise<Appointment> {
+		const { appointmentDate, barberId, customerId, serviceId } = data;
+		const appointment = await prisma.appointment.create({
+			data: {
+				customerId,
+				barberId,
+				serviceId,
+				appointmentDate,
+				status: "CONFIRMED",
+			},
+		});
+
+		return appointment;
+	}
 
 	async findByBarberAndDate(
 		barberId: string,

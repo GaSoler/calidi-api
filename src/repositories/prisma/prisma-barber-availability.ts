@@ -1,5 +1,4 @@
 import type { Weekday } from "@prisma/client";
-import { format } from "date-fns";
 import { prisma } from "@/lib/prisma";
 import type { BarberAvailabilityRepository } from "../barber-availability-repository";
 
@@ -24,8 +23,12 @@ export class PrismaBarberAvailabilityRepository
 		}
 
 		return {
-			startTime: format(availability.startTime, "HH:mm"),
-			endTime: format(availability.endTime, "HH:mm"),
+			startTime:
+				`${availability.startTime.getUTCHours().toString().padStart(2, "0")}:` +
+				`${availability.startTime.getUTCMinutes().toString().padStart(2, "0")}:`,
+			endTime:
+				`${availability.endTime.getUTCHours().toString().padStart(2, "0")}:` +
+				`${availability.endTime.getUTCMinutes().toString().padStart(2, "0")}:`,
 		};
 	}
 }

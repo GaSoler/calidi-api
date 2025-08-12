@@ -1,5 +1,5 @@
 import { Weekday } from "@prisma/client";
-import { addMinutes, format, isBefore, parseISO } from "date-fns";
+import { addMinutes, format, isBefore } from "date-fns";
 import type { AppointmentRepository } from "@/repositories/appointment-repository";
 import type { BarberAvailabilityRepository } from "@/repositories/barber-availability-repository";
 
@@ -30,6 +30,7 @@ export class ListAvailableTimesUseCase {
 		const weekday = [
 			Weekday.SUNDAY,
 			Weekday.MONDAY,
+			Weekday.TUESDAY,
 			Weekday.WEDNESDAY,
 			Weekday.THURSDAY,
 			Weekday.FRIDAY,
@@ -51,8 +52,13 @@ export class ListAvailableTimesUseCase {
 		const { startTime, endTime } = availability;
 
 		const baseDate = format(date, "yyyy-MM-dd");
-		const start = parseISO(`${baseDate}T${startTime}`);
-		const end = parseISO(`${baseDate}T${endTime}`);
+
+		const [year, month, day] = baseDate.split("-").map(Number);
+		const [startHour, startMinute] = startTime.split(":").map(Number);
+		const [endHour, endMinute] = endTime.split(":").map(Number);
+
+		const start = new Date(year, month - 1, day, startHour, startMinute);
+		const end = new Date(year, month - 1, day, endHour, endMinute);
 
 		const appointments = await this.appointmentRepository.findByBarberAndDate(
 			barberId,

@@ -17,7 +17,10 @@ export async function listAvailableTimes(
 			.refine((date) => !isNaN(Date.parse(date)), {
 				message: "Invalid date format. Expected format: YYYY-MM-DD",
 			})
-			.transform((date) => new Date(date)),
+			.transform((date) => {
+				const [year, month, day] = date.split("-").map(Number);
+				return new Date(year, month - 1, day);
+			}),
 	});
 
 	const { barberId } = listAvailableTimesParamsSchema.parse(request.params);

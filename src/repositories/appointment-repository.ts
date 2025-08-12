@@ -1,12 +1,14 @@
+import type { Appointment } from "@prisma/client";
+
 export interface AppointmentRepository {
 	// findManyByCustomerId(customerId: string): Promise<Appointment[]>;
 	// findById(appointmentId: string): Promise<Appointment | null>;
-	// create(data: {
-	// 	customerId: string;
-	// 	barberId: string;
-	// 	serviceId: string;
-	// 	appointmentDate: Date;
-	// }): Promise<Appointment>;
+	create(data: {
+		customerId: string;
+		barberId: string;
+		serviceId: string;
+		appointmentDate: Date;
+	}): Promise<Appointment>;
 	// reschedule(
 	// 	customerId: string,
 	// 	data: {

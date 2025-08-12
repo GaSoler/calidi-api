@@ -5,10 +5,11 @@ src/domain/use-cases
     - ListAvailableBarbersUseCase
     - ListAvailableTimesUseCase
     - CreateAppointmentUseCase
-    - ListAppointmentsUseCase
-    - CancelAppointmentUseCase
-    - RescheduleAppointmentUseCase
     - GetAppointmentDetailsUseCase
+    - RescheduleAppointmentUseCase
+    - ListCancelReasonsUseCase
+    - CancelAppointmentUseCase
+    - ListAppointmentsUseCase
 
   barbers/
     - ListMyAppointmentsUseCase

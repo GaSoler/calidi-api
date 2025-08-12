@@ -18,15 +18,15 @@ export class PrismaServiceRepository implements ServiceRepository {
 	// 	return services;
 	// }
 
-	// async findById(id: string): Promise<Service | null> {
-	// 	const service = await prisma.service.findUnique({
-	// 		where: {
-	// 			id,
-	// 		},
-	// 	});
+	async findById(id: string): Promise<Service | null> {
+		const service = await prisma.service.findUnique({
+			where: {
+				id,
+			},
+		});
 
-	// 	return service;
-	// }
+		return service;
+	}
 
 	// async findByName(name: string): Promise<Service | null> {
 	// 	const service = await prisma.service.findUnique({
