@@ -31,7 +31,7 @@ export async function verifyOtp(request: FastifyRequest, reply: FastifyReply) {
 
 	const refreshToken = await reply.jwtSign(
 		{
-			role: user.roles,
+			roles: user.roles,
 		},
 		{
 			sign: {

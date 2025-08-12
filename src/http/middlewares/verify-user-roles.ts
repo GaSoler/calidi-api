@@ -2,6 +2,7 @@ import type { FastifyReply, FastifyRequest } from "fastify";
 
 export function verifyUserRoles(allowedRoles: string[]) {
 	return async (request: FastifyRequest, reply: FastifyReply) => {
+		console.log("request.user:", request.user);
 		const { roles } = request.user;
 
 		if (!roles || roles.length === 0) {
