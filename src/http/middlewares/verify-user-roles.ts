@@ -2,11 +2,9 @@ import type { FastifyReply, FastifyRequest } from "fastify";
 
 export function verifyUserRoles(allowedRoles: string[]) {
 	return async (request: FastifyRequest, reply: FastifyReply) => {
-		const user = request.user as { role?: { id: string; name: string }[] };
+		const { roles } = request.user;
 
-		const roles = user.role;
-
-		if (!roles || !Array.isArray(roles) || roles.length === 0) {
+		if (!roles || roles.length === 0) {
 			return reply.status(403).send({
 				data: null,
 				error: {
@@ -18,11 +16,7 @@ export function verifyUserRoles(allowedRoles: string[]) {
 			});
 		}
 
-		const userRoleNames = roles.map((role) => role.name);
-
-		const hasAnyRole = allowedRoles.some((role) =>
-			userRoleNames.includes(role),
-		);
+		const hasAnyRole = allowedRoles.some((role) => roles.includes(role));
 
 		if (!hasAnyRole) {
 			return reply.status(403).send({

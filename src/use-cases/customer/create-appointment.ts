@@ -1,9 +1,10 @@
-import { type Appointment, Weekday } from "@prisma/client";
+import { Weekday } from "@prisma/client";
 import type { AppointmentRepository } from "@/repositories/appointment-repository";
 import type { BarberAvailabilityRepository } from "@/repositories/barber-availability-repository";
 import type { RoleRepository } from "@/repositories/role-repository";
 import type { ServiceRepository } from "@/repositories/service-repository";
 import type { UserRepository } from "@/repositories/user-repository";
+import type { Appointment } from "@/types";
 import { BarberUnavailableError } from "../errors/barber-unavailable-error";
 import { InvalidAppointmentDateError } from "../errors/invalid-appointment-date-error";
 import { NotFoundServiceError } from "../errors/not-found-service-error";
@@ -135,6 +136,22 @@ export class CreateAppointmentUseCase {
 			appointmentDate: appointmentDateTime,
 		});
 
-		return { appointment: appointment };
+		return {
+			appointment: {
+				id: appointment.id,
+				customerId: customer.id,
+				customerName: customer.name,
+				barberId: barber.id,
+				barberName: barber.name,
+				serviceId: service.id,
+				serviceName: service.name,
+				serviceDescription: service.description,
+				serviceDuration: service.duration,
+				servicePrice: service.price,
+				status: appointment.status,
+				appointmentDateTime: appointment.appointmentDate.toISOString(),
+				canceledReason: appointment.canceledReason,
+			},
+		};
 	}
 }

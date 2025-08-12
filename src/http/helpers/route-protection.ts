@@ -21,6 +21,10 @@ export function barberOnly() {
 	return rolesOnly(["BARBER"]);
 }
 
+export function customerOnly() {
+	return rolesOnly(["CUSTOMER"]);
+}
+
 export function publicRoute() {
 	return {}; // Sem autenticação
 }

@@ -11,7 +11,6 @@ export async function createAppointment(
 		// customerId: z.string().uuid(),
 		// serviceId: z.string().uuid(),
 		// barberId: z.string().uuid(),
-		customerId: z.string(),
 		serviceId: z.string(),
 		barberId: z.string(),
 		appointmentDateTime: z
@@ -35,7 +34,11 @@ export async function createAppointment(
 			}),
 	});
 
-	const { customerId, serviceId, barberId, appointmentDateTime } =
+	console.log(request.user);
+
+	const customerId = request.user.sub;
+
+	const { serviceId, barberId, appointmentDateTime } =
 		createAppointmentBodySchema.parse(request.body);
 
 	const createAppointmentUseCase = makeCreateAppointmentUseCase();
