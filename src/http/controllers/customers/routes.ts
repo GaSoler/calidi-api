@@ -1,6 +1,7 @@
 import type { FastifyInstance } from "fastify";
 import {
 	authOnly,
+	barberOnly,
 	customerOnly,
 	publicRoute,
 } from "@/http/helpers/route-protection";
@@ -13,5 +14,5 @@ export async function customerRoutes(app: FastifyInstance) {
 	app.get("/services", publicRoute(), listAvailableServices);
 	app.get("/barbers", publicRoute(), listAvailableBarbers);
 	app.get("/barbers/:barberId/times", publicRoute(), listAvailableTimes);
-	app.post("/appointments", customerOnly(), createAppointment);
+	app.post("/appointments", publicRoute(), createAppointment);
 }

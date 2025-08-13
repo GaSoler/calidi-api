@@ -352,15 +352,15 @@ async function main() {
 				customerId: customer1.id,
 				barberId: barberAdmin.id,
 				serviceId: corteService.id,
-				status: AppointmentStatus.CANCELLED,
+				status: AppointmentStatus.CANCELED,
 				appointmentDate: createAppointmentDateTime(-2, 16, 0), // 2 dias atrás
-				canceledReason: CancelReason.CUSTOMER_CANCELLED,
+				canceledReason: CancelReason.CUSTOMER_CANCELED,
 			},
 			{
 				customerId: customer2.id,
 				barberId: barber2.id,
 				serviceId: comboService.id,
-				status: AppointmentStatus.CANCELLED,
+				status: AppointmentStatus.CANCELED,
 				appointmentDate: createAppointmentDateTime(2, 13, 0), // daqui 2 dias
 				canceledReason: CancelReason.WEATHER_OR_EMERGENCY,
 			},
@@ -377,7 +377,7 @@ async function main() {
 	console.log(`👥 Users: ${totalUsers} (2 customers, 3 barbers, 1 admin)`);
 	console.log(`💼 Services: ${totalServices} (1 inactive for testing)`);
 	console.log(
-		`📅 Appointments: ${totalAppointments} (confirmed, done, cancelled)`,
+		`📅 Appointments: ${totalAppointments} (confirmed, done, CANCELED)`,
 	);
 	console.log(`⏰ Multiple barbers with different schedules`);
 	console.log(`📊 Ready for testing all scenarios!`);

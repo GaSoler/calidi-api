@@ -8,11 +8,9 @@ export async function createAppointment(
 	reply: FastifyReply,
 ) {
 	const createAppointmentBodySchema = z.object({
-		// customerId: z.string().uuid(),
-		// serviceId: z.string().uuid(),
-		// barberId: z.string().uuid(),
-		serviceId: z.string(),
-		barberId: z.string(),
+		customerId: z.string().uuid(),
+		serviceId: z.string().uuid(),
+		barberId: z.string().uuid(),
 		appointmentDateTime: z
 			.string()
 			.refine(
@@ -34,11 +32,9 @@ export async function createAppointment(
 			}),
 	});
 
-	console.log(request.user);
+	// const customerIdToken = request.user.sub;
 
-	const customerId = request.user.sub;
-
-	const { serviceId, barberId, appointmentDateTime } =
+	const { customerId, serviceId, barberId, appointmentDateTime } =
 		createAppointmentBodySchema.parse(request.body);
 
 	const createAppointmentUseCase = makeCreateAppointmentUseCase();

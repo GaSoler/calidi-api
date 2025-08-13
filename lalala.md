@@ -1,14 +1,15 @@
 src/domain/use-cases
  use-cases/
   customers/
-    - ListAvailableServicesUseCase
-    - ListAvailableBarbersUseCase
-    - ListAvailableTimesUseCase
-    - CreateAppointmentUseCase
-    - GetAppointmentDetailsUseCase
+    - ListAvailableServicesUseCase - ok
+    - ListAvailableBarbersUseCase - ok
+    - ListAvailableTimesUseCase - ok
+    - CreateAppointmentUseCase - ok
+    - GetAppointmentDetailsUseCase - ok
+    - GetNextAppointmentDetailsUseCase - ok
     - RescheduleAppointmentUseCase
     - ListCancelReasonsUseCase
-    - CancelAppointmentUseCase
+    - CancelAppointmentUseCase - ok
     - ListAppointmentsUseCase
 
   barbers/

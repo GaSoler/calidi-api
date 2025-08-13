@@ -40,3 +40,38 @@ export type Appointment = {
 	appointmentDateTime: string;
 	canceledReason: string | null;
 };
+
+export interface AppointmentWithRelations {
+	id: string;
+	customerId: string;
+	barberId: string;
+	serviceId: string;
+	status: string;
+	appointmentDate: Date;
+	canceledReason: string | null;
+	createdAt: Date;
+	updatedAt: Date;
+	rescheduledAt: Date | null;
+	rescheduledBy: string | null;
+	// Dados relacionados
+	customer: {
+		id: string;
+		name: string;
+		email: string;
+		phone: string;
+	};
+	barber: {
+		id: string;
+		name: string;
+		email: string;
+		phone: string;
+	};
+	service: {
+		id: string;
+		name: string;
+		description: string;
+		duration: number;
+		price: number;
+		active: boolean;
+	};
+}
