@@ -1,7 +1,7 @@
 import type { AppointmentRepository } from "@/repositories/appointment-repository";
 import type { ServiceRepository } from "@/repositories/service-repository";
 import type { UserRepository } from "@/repositories/user-repository";
-import type { Appointment } from "@/types";
+import type { AppointmentWithRelations } from "@/types/api";
 import { NotFoundAppointmentError } from "../errors/not-found-appointment-error";
 import { NotFoundServiceError } from "../errors/not-found-service-error";
 import { ServiceInactiveError } from "../errors/service-inactive-error";
@@ -12,7 +12,7 @@ interface GetAppointmentDetailsUseCaseRequest {
 }
 
 interface GetAppointmentDetailsUseCaseResponse {
-	appointment: Appointment;
+	appointment: AppointmentWithRelations | null;
 }
 
 export class GetAppointmentDetailsUseCase {
@@ -55,18 +55,29 @@ export class GetAppointmentDetailsUseCase {
 		return {
 			appointment: {
 				id: appointment.id,
-				customerId: customer.id,
-				customerName: customer.name,
-				barberId: barber.id,
-				barberName: barber.name,
-				serviceId: service.id,
-				serviceName: service.name,
-				serviceDescription: service.description,
-				serviceDuration: service.duration,
-				servicePrice: service.price,
 				status: appointment.status,
-				appointmentDateTime: appointment.appointmentDate.toISOString(),
+				appointmentDateTime: appointment.appointmentDate,
 				canceledReason: appointment.canceledReason,
+				customer: {
+					id: appointment.customer.id,
+					name: appointment.customer.name,
+					email: appointment.customer.email,
+					phone: appointment.customer.phone,
+				},
+				barber: {
+					id: appointment.barber.id,
+					name: appointment.barber.name,
+					email: appointment.barber.email,
+					phone: appointment.barber.phone,
+				},
+				service: {
+					id: appointment.service.id,
+					name: appointment.service.name,
+					description: appointment.service.description,
+					duration: appointment.service.duration,
+					price: appointment.service.price,
+					active: appointment.service.active,
+				},
 			},
 		};
 	}

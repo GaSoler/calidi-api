@@ -1,5 +1,5 @@
-import type { Role } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import type { Role } from "@/types/repository";
 import type { RoleRepository } from "../role-repository";
 
 export class PrismaRoleRepository implements RoleRepository {

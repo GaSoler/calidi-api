@@ -1,23 +1,9 @@
-import type { Service } from "@prisma/client";
+import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import type { Service } from "@/types/repository";
 import type { ServiceRepository } from "../service-repository";
 
 export class PrismaServiceRepository implements ServiceRepository {
-	async findAllActive(): Promise<Service[]> {
-		const services = await prisma.service.findMany({
-			where: {
-				active: true,
-			},
-		});
-
-		return services;
-	}
-	// async findAll(): Promise<Service[]> {
-	// 	const services = await prisma.service.findMany();
-
-	// 	return services;
-	// }
-
 	async findById(id: string): Promise<Service | null> {
 		const service = await prisma.service.findUnique({
 			where: {
@@ -28,43 +14,64 @@ export class PrismaServiceRepository implements ServiceRepository {
 		return service;
 	}
 
-	// async findByName(name: string): Promise<Service | null> {
-	// 	const service = await prisma.service.findUnique({
-	// 		where: {
-	// 			name,
-	// 		},
-	// 	});
+	async findByName(name: string): Promise<Service | null> {
+		const service = await prisma.service.findUnique({
+			where: {
+				name,
+			},
+		});
 
-	// 	return service;
-	// }
+		return service;
+	}
 
-	// async create(data: {
-	// 	name: string;
-	// 	duration: number;
-	// 	price: number;
-	// }): Promise<Service> {
-	// 	const service = await prisma.service.create({
-	// 		data,
-	// 	});
+	async findAll(filters?: Prisma.ServiceWhereInput): Promise<Service[]> {
+		const services = await prisma.service.findMany({
+			where: filters,
+			orderBy: { name: "asc" },
+		});
 
-	// 	return service;
-	// }
+		return services;
+	}
 
-	// async update(
-	// 	id: string,
-	// 	data: Partial<{ name: string; duration: number; price: number }>,
-	// ): Promise<Service> {
-	// 	const updatedService = await prisma.service.update({
-	// 		where: { id },
-	// 		data,
-	// 	});
+	async create(data: {
+		name: string;
+		description?: string;
+		duration: number;
+		price: number;
+	}): Promise<Service> {
+		const service = await prisma.service.create({
+			data: {
+				name: data.name,
+				description: data.description,
+				duration: data.duration,
+				price: data.price,
+			},
+		});
 
-	// 	return updatedService;
-	// }
+		return service;
+	}
 
-	// async delete(id: string): Promise<void> {
-	// 	await prisma.service.delete({
-	// 		where: { id },
-	// 	});
-	// }
+	async update(
+		id: string,
+		data: Partial<{
+			name: string;
+			description?: string;
+			active?: boolean;
+			duration: number;
+			price: number;
+		}>,
+	): Promise<Service> {
+		const updatedService = await prisma.service.update({
+			where: { id },
+			data,
+		});
+
+		return updatedService;
+	}
+
+	async delete(id: string): Promise<void> {
+		await prisma.service.delete({
+			where: { id },
+		});
+	}
 }

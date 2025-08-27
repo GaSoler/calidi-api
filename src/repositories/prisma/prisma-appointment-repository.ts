@@ -1,29 +1,42 @@
 import type { Appointment, CancelReason } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import type { AppointmentWithRelations } from "@/types/repository";
 import type { AppointmentRepository } from "../appointment-repository";
 
 export class PrismaAppointmentRepository implements AppointmentRepository {
-	async findManyByCustomerId(customerId: string): Promise<Appointment[]> {
+	async findById(
+		appointmentId: string,
+	): Promise<AppointmentWithRelations | null> {
+		const appointment = await prisma.appointment.findUnique({
+			where: { id: appointmentId },
+			include: {
+				barber: true,
+				customer: true,
+				service: true,
+			},
+		});
+
+		return appointment;
+	}
+
+	async findManyByCustomerId(
+		customerId: string,
+	): Promise<AppointmentWithRelations[]> {
 		const appointments = await prisma.appointment.findMany({
 			where: { customerId },
 			include: {
-				service: true,
 				barber: true,
+				customer: true,
+				service: true,
 			},
 		});
 
 		return appointments;
 	}
 
-	async findById(appointmentId: string): Promise<Appointment | null> {
-		const appointment = await prisma.appointment.findUnique({
-			where: { id: appointmentId },
-		});
-
-		return appointment;
-	}
-
-	async findNextByCustomerId(customerId: string): Promise<Appointment | null> {
+	async findNextByCustomerId(
+		customerId: string,
+	): Promise<AppointmentWithRelations | null> {
 		const nextAppointment = await prisma.appointment.findFirst({
 			where: {
 				customerId,
@@ -31,6 +44,11 @@ export class PrismaAppointmentRepository implements AppointmentRepository {
 				appointmentDate: {
 					gte: new Date(),
 				},
+			},
+			include: {
+				barber: true,
+				customer: true,
+				service: true,
 			},
 			orderBy: {
 				appointmentDate: "asc",
@@ -45,7 +63,7 @@ export class PrismaAppointmentRepository implements AppointmentRepository {
 		barberId: string;
 		serviceId: string;
 		appointmentDate: Date;
-	}): Promise<Appointment> {
+	}): Promise<AppointmentWithRelations> {
 		const { appointmentDate, barberId, customerId, serviceId } = data;
 		const appointment = await prisma.appointment.create({
 			data: {
@@ -55,25 +73,25 @@ export class PrismaAppointmentRepository implements AppointmentRepository {
 				appointmentDate,
 				status: "CONFIRMED",
 			},
+			include: {
+				barber: true,
+				customer: true,
+				service: true,
+			},
 		});
 
 		return appointment;
 	}
 
-	async cancel(
-		appointmentId: string,
-		reason: CancelReason,
-	): Promise<Appointment | null> {
-		const canceledAppointment = await prisma.appointment.update({
-			where: { id: appointmentId },
-			data: {
-				status: "CANCELED",
-				canceledReason: reason,
-			},
-		});
-
-		return canceledAppointment;
-	}
+	// async cancel(
+	// 	appointmentId: string,
+	// 	data: {
+	// 		status: string;
+	// 		canceledReason: string;
+	// 		canceledAt: Date;
+	// 		canceledBy: string;
+	// 	},
+	// ): Promise<Appointment> {}
 
 	async findByBarberAndDate(
 		barberId: string,

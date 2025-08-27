@@ -6,6 +6,9 @@ import {
 	publicRoute,
 } from "@/http/helpers/route-protection";
 import { createAppointment } from "./create-appointment";
+import { getAppointment } from "./get-appointment";
+import { getNextAppointment } from "./get-next-appointment";
+import { listAppointments } from "./list-appointments";
 import { listAvailableBarbers } from "./list-available-barbers";
 import { listAvailableServices } from "./list-available-services";
 import { listAvailableTimes } from "./list-available-times";
@@ -15,4 +18,7 @@ export async function customerRoutes(app: FastifyInstance) {
 	app.get("/barbers", publicRoute(), listAvailableBarbers);
 	app.get("/barbers/:barberId/times", publicRoute(), listAvailableTimes);
 	app.post("/appointments", publicRoute(), createAppointment);
+	app.get("/appointments", customerOnly(), listAppointments);
+	app.get("/appointments/:appointmentId", publicRoute(), getAppointment);
+	app.get("/appointments/next", customerOnly(), getNextAppointment);
 }

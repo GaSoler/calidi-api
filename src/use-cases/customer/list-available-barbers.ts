@@ -1,5 +1,5 @@
 import type { UserRepository } from "@/repositories/user-repository";
-import type { Barber } from "@/types/barber";
+import type { Barber } from "@/types/api";
 
 interface ListAvailableBarbersUseCaseResponse {
 	barbers: Barber[];

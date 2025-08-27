@@ -2,7 +2,8 @@ import type { CancelReason } from "@prisma/client";
 import type { AppointmentRepository } from "@/repositories/appointment-repository";
 import type { ServiceRepository } from "@/repositories/service-repository";
 import type { UserRepository } from "@/repositories/user-repository";
-import type { Appointment } from "@/types";
+import type { AppointmentWithRelations } from "@/types";
+import { AppointmentAlreadyCanceledError } from "../errors/appointment-already-canceled-error";
 import { AppointmentNotCancelablePermissionError } from "../errors/appointment-not-cancelable-permission-error";
 import { AppointmentNotCancelableStatusError } from "../errors/appointment-not-cancelable-status-error";
 import { AppointmentNotCancelableTimeError } from "../errors/appointment-not-cancelable-time-error";
@@ -13,18 +14,17 @@ import { UserNotFoundError } from "../errors/user-not-found-error";
 interface CancelAppointmentUseCaseRequest {
 	appointmentId: string;
 	customerId: string;
-	reason: CancelReason;
+	reason?: CancelReason;
 }
 
 interface CancelAppointmentUseCaseResponse {
-	appointment: Appointment | null;
+	appointment: AppointmentWithRelations;
 }
 
 export class CancelAppointmentUseCase {
 	constructor(
 		private appointmentRepository: AppointmentRepository,
 		private userRepository: UserRepository,
-		private serviceRepository: ServiceRepository,
 	) {}
 
 	async execute({
@@ -36,6 +36,10 @@ export class CancelAppointmentUseCase {
 			await this.appointmentRepository.findById(appointmentId);
 		if (!appointment) {
 			throw new NotFoundAppointmentError();
+		}
+
+		if (appointment.status === "CANCELED") {
+			throw new AppointmentAlreadyCanceledError();
 		}
 
 		const customer = await this.userRepository.findById(customerId);
@@ -53,24 +57,12 @@ export class CancelAppointmentUseCase {
 		}
 
 		const now = new Date();
-		const appointmentDate = new Date(appointment.appointmentDate);
+		const appointmentTime = new Date(appointment.appointmentDate);
+		const timeDifferenceHours =
+			(appointmentTime.getTime() - now.getTime()) / (1000 * 60 * 60);
 
-		const diffMs = appointmentDate.getTime() - now.getTime();
-		const twoHoursMs = 2 * 60 * 60 * 1000;
-
-		if (diffMs <= twoHoursMs) {
+		if (timeDifferenceHours < 2 && timeDifferenceHours > 0) {
 			throw new AppointmentNotCancelableTimeError();
-		}
-
-		const service = await this.serviceRepository.findById(
-			appointment.serviceId,
-		);
-		if (!service) {
-			throw new NotFoundServiceError();
-		}
-		const barber = await this.userRepository.findById(appointment.barberId);
-		if (!barber) {
-			throw new UserNotFoundError();
 		}
 
 		const canceledAppointment = await this.appointmentRepository.cancel(

@@ -4,7 +4,7 @@ import type { BarberAvailabilityRepository } from "@/repositories/barber-availab
 import type { RoleRepository } from "@/repositories/role-repository";
 import type { ServiceRepository } from "@/repositories/service-repository";
 import type { UserRepository } from "@/repositories/user-repository";
-import type { Appointment } from "@/types";
+import type { AppointmentWithRelations } from "@/types/api";
 import { BarberUnavailableError } from "../errors/barber-unavailable-error";
 import { InvalidAppointmentDateError } from "../errors/invalid-appointment-date-error";
 import { NotFoundServiceError } from "../errors/not-found-service-error";
@@ -22,7 +22,7 @@ interface CreateAppointmentUseCaseRequest {
 }
 
 interface CreateAppointmentUseCaseResponse {
-	appointment: Appointment;
+	appointment: AppointmentWithRelations;
 }
 
 export class CreateAppointmentUseCase {
@@ -139,18 +139,29 @@ export class CreateAppointmentUseCase {
 		return {
 			appointment: {
 				id: appointment.id,
-				customerId: customer.id,
-				customerName: customer.name,
-				barberId: barber.id,
-				barberName: barber.name,
-				serviceId: service.id,
-				serviceName: service.name,
-				serviceDescription: service.description,
-				serviceDuration: service.duration,
-				servicePrice: service.price,
 				status: appointment.status,
-				appointmentDateTime: appointment.appointmentDate.toISOString(),
+				appointmentDateTime: appointment.appointmentDate,
 				canceledReason: appointment.canceledReason,
+				customer: {
+					id: customer.id,
+					name: customer.name,
+					email: customer.email,
+					phone: customer.phone,
+				},
+				barber: {
+					id: barber.id,
+					name: barber.name,
+					email: barber.email,
+					phone: barber.phone,
+				},
+				service: {
+					id: service.id,
+					name: service.name,
+					description: service.description,
+					duration: service.duration,
+					price: service.price,
+					active: service.active,
+				},
 			},
 		};
 	}

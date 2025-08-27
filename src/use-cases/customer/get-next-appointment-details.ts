@@ -1,29 +1,25 @@
 import type { AppointmentRepository } from "@/repositories/appointment-repository";
-import type { ServiceRepository } from "@/repositories/service-repository";
 import type { UserRepository } from "@/repositories/user-repository";
-import type { Appointment } from "@/types";
-import { NotFoundServiceError } from "../errors/not-found-service-error";
-import { ServiceInactiveError } from "../errors/service-inactive-error";
+import type { AppointmentWithRelations } from "@/types/api";
 import { UserNotFoundError } from "../errors/user-not-found-error";
 
-interface GetAppointmentDetailsUseCaseRequest {
+interface GetNextAppointmentDetailsUseCaseRequest {
 	customerId: string;
 }
 
-interface GetAppointmentDetailsUseCaseResponse {
-	appointment: Appointment | null;
+interface GetNextAppointmentDetailsUseCaseResponse {
+	appointment: AppointmentWithRelations | null;
 }
 
-export class GetAppointmentDetailsUseCase {
+export class GetNextAppointmentDetailsUseCase {
 	constructor(
-		private appointmentRepository: AppointmentRepository,
 		private userRepository: UserRepository,
-		private serviceRepository: ServiceRepository,
+		private appointmentRepository: AppointmentRepository,
 	) {}
 
 	async execute({
 		customerId,
-	}: GetAppointmentDetailsUseCaseRequest): Promise<GetAppointmentDetailsUseCaseResponse> {
+	}: GetNextAppointmentDetailsUseCaseRequest): Promise<GetNextAppointmentDetailsUseCaseResponse> {
 		const customer = await this.userRepository.findById(customerId);
 		if (!customer) {
 			throw new UserNotFoundError();
@@ -31,42 +27,39 @@ export class GetAppointmentDetailsUseCase {
 
 		const nextAppointment =
 			await this.appointmentRepository.findNextByCustomerId(customer.id);
+
 		if (!nextAppointment) {
 			return {
 				appointment: null,
 			};
 		}
 
-		const service = await this.serviceRepository.findById(
-			nextAppointment.serviceId,
-		);
-		if (!service) {
-			throw new NotFoundServiceError();
-		}
-		if (!service.active) {
-			throw new ServiceInactiveError();
-		}
-
-		const barber = await this.userRepository.findById(nextAppointment.barberId);
-		if (!barber) {
-			throw new UserNotFoundError();
-		}
-
 		return {
 			appointment: {
 				id: nextAppointment.id,
-				customerId: customer.id,
-				customerName: customer.name,
-				barberId: barber.id,
-				barberName: barber.name,
-				serviceId: service.id,
-				serviceName: service.name,
-				serviceDescription: service.description,
-				serviceDuration: service.duration,
-				servicePrice: service.price,
 				status: nextAppointment.status,
-				appointmentDateTime: nextAppointment.appointmentDate.toISOString(),
+				appointmentDateTime: nextAppointment.appointmentDate,
 				canceledReason: nextAppointment.canceledReason,
+				customer: {
+					id: nextAppointment.customer.id,
+					name: nextAppointment.customer.name,
+					email: nextAppointment.customer.email,
+					phone: nextAppointment.customer.phone,
+				},
+				barber: {
+					id: nextAppointment.barber.id,
+					name: nextAppointment.barber.name,
+					email: nextAppointment.barber.email,
+					phone: nextAppointment.barber.phone,
+				},
+				service: {
+					id: nextAppointment.service.id,
+					name: nextAppointment.service.name,
+					description: nextAppointment.service.description,
+					duration: nextAppointment.service.duration,
+					price: nextAppointment.service.price,
+					active: nextAppointment.service.active,
+				},
 			},
 		};
 	}

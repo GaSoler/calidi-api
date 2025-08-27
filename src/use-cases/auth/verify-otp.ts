@@ -1,8 +1,7 @@
 import { canTryOtp, recordInvalidOtp } from "@/lib/otp-attempts";
 import type { OtpRepository } from "@/repositories/otp-repository";
-import type { RoleRepository } from "@/repositories/role-repository";
 import type { UserRepository } from "@/repositories/user-repository";
-import type { UserAccessToken } from "@/types/user";
+import type { UserAccessToken } from "@/types/api";
 import { InvalidOtpError } from "../errors/invalid-otp-error";
 import { TooManyAttemptsError } from "../errors/too-many-attempts-error";
 import { UserNotFoundError } from "../errors/user-not-found-error";
@@ -19,7 +18,6 @@ interface VerifyOtpUseCaseResponse {
 export class VerifyOtpUseCase {
 	constructor(
 		private userRepository: UserRepository,
-		private roleRepository: RoleRepository,
 		private otpRepository: OtpRepository,
 	) {}
 
@@ -32,7 +30,7 @@ export class VerifyOtpUseCase {
 			throw new UserNotFoundError();
 		}
 
-		const roles = await this.roleRepository.findByUserId(user.id);
+		const roleNames = user.roles.map((role) => role.role.name);
 
 		if (!canTryOtp(user.id)) {
 			throw new TooManyAttemptsError();
@@ -49,7 +47,7 @@ export class VerifyOtpUseCase {
 		return {
 			user: {
 				id: user.id,
-				roles: roles.map((role) => role.name),
+				roles: roleNames,
 			},
 		};
 	}

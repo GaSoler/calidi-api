@@ -1,6 +1,6 @@
 import type { RoleRepository } from "@/repositories/role-repository";
 import type { UserRepository } from "@/repositories/user-repository";
-import type { User } from "@/types/user";
+import type { User } from "@/types/api";
 import { NotFoundRoleError } from "../errors/role-not-found-error";
 import { UserAlreadyExistsError } from "../errors/user-already-exists-error";
 
@@ -42,12 +42,14 @@ export class RegisterCustomerUseCase {
 			roleId: role.id,
 		});
 
+		const roleNames = user.roles.map((role) => role.role.name);
+
 		return {
 			user: {
 				name: user.name,
 				email: user.email,
 				phone: user.phone,
-				roles: [role.name],
+				roles: roleNames,
 			},
 		};
 	}

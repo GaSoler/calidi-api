@@ -1,15 +1,18 @@
 import type { Appointment, CancelReason } from "@prisma/client";
+import type { AppointmentWithRelations } from "@/types/repository";
 
 export interface AppointmentRepository {
-	findManyByCustomerId(customerId: string): Promise<Appointment[]>;
-	findById(appointmentId: string): Promise<Appointment | null>;
-	findNextByCustomerId(customerId: string): Promise<Appointment | null>;
+	findById(appointmentId: string): Promise<AppointmentWithRelations | null>;
+	findManyByCustomerId(customerId: string): Promise<AppointmentWithRelations[]>;
+	findNextByCustomerId(
+		customerId: string,
+	): Promise<AppointmentWithRelations | null>;
 	create(data: {
 		customerId: string;
 		barberId: string;
 		serviceId: string;
 		appointmentDate: Date;
-	}): Promise<Appointment>;
+	}): Promise<AppointmentWithRelations>;
 	// reschedule(
 	// 	customerId: string,
 	// 	data: {
@@ -18,10 +21,18 @@ export interface AppointmentRepository {
 	// 		startsAt: string;
 	// 	},
 	// ): Promise<Appointment | null>;
-	cancel(
-		appointmentId: string,
-		reason: CancelReason,
-	): Promise<Appointment | null>;
+	// cancel(
+	// 	appointmentId: string,
+	// 	data: {
+	// 		status: string;
+	// 		canceledReason: string;
+	// 		canceledAt: Date;
+	// 		canceledBy: string;
+	// 	},
+	// ): Promise<Appointment>;
+	// findByIdWithRelations(
+	// 	appointmentId: string,
+	// ): Promise<AppointmentWithRelations | null>;
 	findByBarberAndDate(
 		barberId: string,
 		date: Date,

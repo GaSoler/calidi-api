@@ -7,10 +7,10 @@ src/domain/use-cases
     - CreateAppointmentUseCase - ok
     - GetAppointmentDetailsUseCase - ok
     - GetNextAppointmentDetailsUseCase - ok
+    - ListAppointmentsUseCase - ok
     - RescheduleAppointmentUseCase
-    - ListCancelReasonsUseCase
-    - CancelAppointmentUseCase - ok
-    - ListAppointmentsUseCase
+    - CancelAppointmentUseCase 
+    
 
   barbers/
     - ListMyAppointmentsUseCase

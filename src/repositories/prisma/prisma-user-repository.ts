@@ -1,28 +1,36 @@
-import type { User } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import type { UserRepository, UserWithRoles } from "../user-repository";
+import type { User, UserWithRoles } from "@/types/repository";
+import type { UserRepository } from "../user-repository";
 
 export class PrismaUserRepository implements UserRepository {
-	async findAll(): Promise<User[]> {
-		const users = await prisma.user.findMany();
-
-		return users;
-	}
-
-	async findById(id: string): Promise<User | null> {
+	async findById(id: string): Promise<UserWithRoles | null> {
 		const user = await prisma.user.findUnique({
 			where: {
 				id,
+			},
+			include: {
+				roles: {
+					include: {
+						role: true,
+					},
+				},
 			},
 		});
 
 		return user;
 	}
 
-	async findByPhone(phone: string): Promise<User | null> {
+	async findByPhone(phone: string): Promise<UserWithRoles | null> {
 		const user = await prisma.user.findUnique({
 			where: {
 				phone,
+			},
+			include: {
+				roles: {
+					include: {
+						role: true,
+					},
+				},
 			},
 		});
 
@@ -40,13 +48,6 @@ export class PrismaUserRepository implements UserRepository {
 					},
 				},
 			},
-			include: {
-				roles: {
-					include: {
-						role: true,
-					},
-				},
-			},
 		});
 
 		return users;
@@ -57,7 +58,7 @@ export class PrismaUserRepository implements UserRepository {
 		phone: string;
 		email: string;
 		roleId: string;
-	}): Promise<User> {
+	}): Promise<UserWithRoles> {
 		const { name, phone, email, roleId } = data;
 
 		const user = await prisma.user.create({
@@ -69,7 +70,13 @@ export class PrismaUserRepository implements UserRepository {
 					create: [{ roleId }],
 				},
 			},
-			include: { roles: true },
+			include: {
+				roles: {
+					include: {
+						role: true,
+					},
+				},
+			},
 		});
 
 		return user;
@@ -94,85 +101,5 @@ export class PrismaUserRepository implements UserRepository {
 		await prisma.user.delete({
 			where: { id },
 		});
-	}
-
-	async findByIdWithRoles(id: string): Promise<UserWithRoles | null> {
-		const user = await prisma.user.findUnique({
-			where: {
-				id,
-			},
-			include: {
-				roles: {
-					include: {
-						role: true,
-					},
-				},
-			},
-		});
-
-		if (!user) {
-			return null;
-		}
-
-		return {
-			id: user.id,
-			name: user.name,
-			phone: user.phone,
-			email: user.email,
-			createdAt: user.createdAt,
-			updatedAt: user.updatedAt,
-			roles: user.roles.map((userRole) => ({
-				id: userRole.role.id,
-				name: userRole.role.name,
-			})),
-		};
-	}
-
-	async findByPhoneWithRoles(phone: string): Promise<UserWithRoles | null> {
-		const user = await prisma.user.findUnique({
-			where: {
-				phone,
-			},
-			include: {
-				roles: {
-					include: {
-						role: true,
-					},
-				},
-			},
-		});
-
-		if (!user) {
-			return null;
-		}
-
-		return {
-			id: user.id,
-			name: user.name,
-			phone: user.phone,
-			email: user.email,
-			createdAt: user.createdAt,
-			updatedAt: user.updatedAt,
-			roles: user.roles.map((userRole) => ({
-				id: userRole.role.id,
-				name: userRole.role.name,
-			})),
-		};
-	}
-
-	async findBarbers(): Promise<User[]> {
-		const barbers = await prisma.user.findMany({
-			where: {
-				roles: {
-					some: {
-						role: {
-							name: "BARBER",
-						},
-					},
-				},
-			},
-		});
-
-		return barbers;
 	}
 }
